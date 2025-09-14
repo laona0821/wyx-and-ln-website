@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="表头合照.jpg" type="image/x-icon">
+    <title>我的奇幻旅程</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+         .music-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+ 
+        .music-icon:hover {
+            transform: scale(1.1);
+        }
+ 
+        .music-icon:before {
+            content: "♫";
+            font-size: 24px;
+            color: #666;
+        }
+ 
+        /* 弹窗式控制面板 */
+        .music-popup {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            transform-origin: bottom right;
+            transform: scale(0);
+            transition: transform 0.3s ease;
+            z-index: 99;
+            width: 220px;
+        }
+ 
+        /* 显示状态 */
+        .music-popup.visible {
+            transform: scale(1);
+        }
+ 
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+ 
+        .popup-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+ 
+        .close-btn {
+            cursor: pointer;
+            font-size: 20px;
+            color: #999;
+        }
+ 
+        button { 
+            margin: 5px 0;
+            padding: 6px 12px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background: #f8f8f8;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+ 
+        button:hover {
+            background: #eef;
+            transform: translateY(-2px);
+        }
+ 
+        .volume-control {
+            margin-top: 15px;
+        }
+ 
+        .volume-control label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+ 
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #e0e0e0;
+            border-radius: 3px;
+        }
+ 
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            border: 2px solid #6200ee;
+            cursor: pointer;
+        }
+        button { 
+            margin: 0 5px; 
+            padding: 5px 10px;
+        }
+ 
+        #touchPanel.visible {
+            bottom: 30px; /* 显示时位置 */
+        }
+ 
+        .control-btn {
+            background: #4A90E2;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        
+        button { margin: 0 5px; }
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 头部样式 */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 旅行地图部分 */
+        .travel-map {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .map-image {
+            width: 50%;
+            max-height: 500px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        /* 旅行日记部分 */
+        .travel-diary {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .diary-entry {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .diary-entry:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .diary-date {
+            color: #764ba2;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .diary-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .diary-images img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        
+        /* 旅行总结部分 */
+        .travel-summary {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .highlight-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #764ba2;
+        }
+        
+        /* 表单部分 */
+        .travel-preferences {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: scale(1.02);
+        }
+        
+        /* 页脚部分 */
+        footer {
+            background: #333;
+            color: white;
+            padding: 30px 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .sponsors {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .sponsor-logo {
+            height: 50px;
+            width: auto;
+        }
+        
+        .social-buttons {
+            margin-top: 20px;
+        }
+        
+        .social-button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 0 5px;
+            background: #555;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .social-button:hover {
+            background: #777;
+        }
+        .diary-images {
+    position: relative;
+    z-index: 1;
+}
+ 
+.diary-images img {
+    transition: transform 0.3s ease, z-index 0.3s step-end;
+    cursor: pointer;
+}
+ 
+.diary-images img:hover {
+    transform: scale(1.8);
+    z-index: 10;
+    position: relative;
+}
+ 
+/* 背景虚化效果 - 当任意图片被悬停时 */
+.diary-entry:has(img:hover) {
+    position: relative;
+    z-index: 5;
+}
+ 
+.diary-entry:has(img:hover)::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    z-index: -1;
+    filter: blur(3px);
+}
+ 
+/* 视频元素也应用相同效果 */
+.diary-images video {
+    transition: transform 0.3s ease, z-index 0.3s step-end;
+}
+ 
+.diary-images video:hover {
+    transform: scale(1.8);
+    z-index: 10;
+    position: relative;
+}
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .travel-diary, .highlights, form {
+                grid-template-columns: 1fr;
+            }
+            
+            form {
+                grid-template-columns: 1fr;
+            }
+            
+            nav {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🌌 我的奇幻旅程：漫步在中国的广袤土地</h1>
+        <p>探索未知，发现美好</p>
+        <nav>
+            <a href="#travel-map">旅行地图</a>
+            <a href="#travel-diary">旅行日记</a>
+            <a href="#travel-summary">旅行总结</a>
+            <a href="#travel-preferences">旅行偏好</a>
+        </nav>
+    </header>
+
+ <audio id="bgMusic" loop>
+        <source src="弹壳Danko - 怀抱.mp3" type="audio/mpeg">
+    </audio>
+ 
+    <!-- 音乐图标 -->
+    <div class="music-icon" id="musicIcon"></div>
+    
+    <!-- 弹窗式控制面板 -->
+    <div class="music-popup" id="musicPopup">
+        <div class="popup-header">
+            <h3>音乐控制</h3>
+            <div class="close-btn" id="closeBtn">&times;</div>
+        </div>
+        
+        <div class="control-buttons">
+            <button onclick="playMusic()">播放</button>
+            <button onclick="pauseMusic()">暂停</button>
+            <button onclick="toggleMute()">静音/取消静音</button>
+        </div>
+        
+        <div class="volume-control">
+            <label>音量控制</label>
+            <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.7">
+        </div>
+    </div>
+ 
+    <script>
+        const music = document.getElementById('bgMusic');
+        const volumeControl = document.getElementById('volumeControl');
+        const musicIcon = document.getElementById('musicIcon');
+        const musicPopup = document.getElementById('musicPopup');
+        const closeBtn = document.getElementById('closeBtn');
+        
+        // 初始化音量
+        music.volume = volumeControl.value;
+        
+        // 点击音乐图标打开弹窗
+        musicIcon.addEventListener('click', () => {
+            musicPopup.classList.add('visible');
+        });
+        
+        // 关闭按钮关闭弹窗
+        closeBtn.addEventListener('click', () => {
+            musicPopup.classList.remove('visible');
+        });
+        
+        // 点击外部区域关闭弹窗
+        document.addEventListener('click', (e) => {
+            if (musicPopup.classList.contains('visible') && 
+                !musicPopup.contains(e.target) && 
+                !musicIcon.contains(e.target)) {
+                musicPopup.classList.remove('visible');
+            }
+        });
+        
+        // 音频控制函数
+        function playMusic() { 
+            music.play(); 
+            updatePlayState();
+        }
+        
+        function pauseMusic() { 
+            music.pause(); 
+            updatePlayState();
+        }
+        
+        function toggleMute() { 
+            music.muted = !music.muted;
+            // 更新按钮状态
+            const muteBtn = document.querySelector('.control-buttons button:last-child');
+            muteBtn.textContent = music.muted ? '取消静音' : '静音';
+        }
+        
+        // 更新播放状态显示
+        function updatePlayState() {
+            const playBtn = document.querySelector('.control-buttons button:first-child');
+            const pauseBtn = document.querySelector('.control-buttons button:nth-child(2)');
+            
+            playBtn.style.display = music.paused ? 'inline-block' : 'none';
+            pauseBtn.style.display = music.paused ? 'none' : 'inline-block';
+        }
+        
+        // 音量控制
+        volumeControl.addEventListener('input', function() {
+            music.volume = this.value;
+        });
+        
+        // 初始状态更新
+        updatePlayState();
+    </script>
+    <div class="container">
+        <section id="travel-map" class="travel-map">
+            <h2>🗺️ 我的旅行路线</h2>
+            <img src="ditu.jpg" alt="旅行地图" class="map-image">
+            <p>跟随我的脚步，探索中国的美丽风景</p>
+        </section>
+
+        <section id="travel-diary" class="travel-diary">
+            <div class="diary-entry">
+                <h3>📅 2023年7月21日 - 洛阳</h3>
+                <p>我们到了洛阳，去了<strong>天堂名堂</strong>，看<strong>洛邑古城</strong></p>
+                <div class="diary-images">
+                    <img src="天堂.jpg" alt="天堂">
+                    <img src="洛邑.jpg" alt="洛邑">
+                    <img src="洛阳我们.jpg" alt="我们">
+                    <img src="我们.jpg" alt="我们">
+                    <img src="白马.jpg" alt="白马寺"> 
+                    <img src="应天门.jpg" alt="应天门">
+                </div>
+            </div>
+            <div class="diary-entry">
+                <h3>📅 2023年10月1日 - 开封</h3>
+                <p>我们到了开封，去了<strong>博物馆</strong>，看<strong>大宋武侠城</strong></p>
+                <div class="diary-images">
+                    <img src="大宋.jpg" alt="武侠成">
+                    <img src="开封博物.jpg" alt="博物馆">
+                    <img src="我们1.jpg" alt="我们"> 
+                    <img src="开封合照2.jpg" alt="驴肉">
+                    <img src="开封水.jpg" alt="驴肉">
+                    <img src="开封谁2.jpg" alt="驴肉">
+                    <img src="开封耶.jpg" alt="驴肉">
+                    <video width="180" height="120" controls autoplay>
+                    <source src="开封博物馆.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+            <div class="diary-entry">
+                <h3>📅 2024年5月1日 - 乌鲁木齐</h3>
+                <p>51劳动节我到了乌鲁木齐，尝了他们特色的烧烤，<strong>馕</strong></p>
+                <div class="diary-images">
+                    <img src="0a67beec2a746584e9e3641b496c468.jpg" alt="乌鲁木齐站">
+                    <img src="0437b7105e40f19344eecc0ada4e6e5.jpg" alt="有很多烧烤">
+                    <img src="64ee435d6e24ec69bdbb8791ec72bc2.jpg" alt="我">
+                    <img src="da2ef0542920462e3b984ca0a49015e.jpg" alt="她">
+                    <img src="乌鲁木齐.jpg" alt="蒲公英">
+                    <img src="乌鲁木齐 (2).jpg" alt="艺术展">
+                    <img src="乌鲁木齐1.jpg" alt="她">
+                    <video width="180" height="120" controls autoplay>
+                    <source src="大巴扎.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+            <div class="diary-entry">
+                <h3>📅 2024年7月1日 - 郑州</h3>
+                <p>我们到了郑州，去了<strong>玉米楼</strong>，看<strong>cbd</strong></p>
+                <div class="diary-images">
+                    <img src="玉米.jpg" alt="玉米">
+                    <img src="郑州湖.jpg" alt="湖">
+                    <img src="郑州我们.jpg" alt="我们">
+                    <img src="郑州玉米.jpg" alt="她">
+                    <img src="郑州✌.jpg" alt="她">
+                    <img src="郑州2.jpg" alt="她">
+                     <video width="240" height="160" controls autoplay>
+                    <source src="郑州爽.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+            <div class="diary-entry">
+                <h3>📅 2024年8月30日 - 洛阳二刷</h3>
+                <p>我们到了洛阳，去了<strong>穿了汉服</strong>，<strong>我当摄影师</strong></p>
+                <div class="diary-images">
+                    <img src="汉服三.jpg" alt="美">
+                    <img src="汉服1.jpg" alt="美">
+                    <img src="汉服二.jpg" alt="美">
+                    <img src="洛阳二刷我们.jpg" alt="我们">
+                    <img src="海碧.jpg" alt="海碧"> 
+                    <img src="洛阳酸梅汤.jpg" alt="不好喝">
+                </div>
+            </div>
+            <div class="diary-entry">
+                <h3>📅 2024年10月1日 - 西宁</h3>
+                <p>我们到了西宁，去了<strong>青海湖</strong>和<strong>塔尔寺</strong></p>
+                <div class="diary-images">
+                    <img src="495a4225ac8c47a9f401a1e79541237.jpg" alt="青海">
+                    <img src="602555d6663a405daa2eaaa61cd68f5.jpg" alt="塔尔寺">
+                    <img src="bf41ef2ffe099861256be5399616e29.jpg" alt="我">
+                    <img src="fe2387c32b5cb83a957c789130255a2.jpg" alt="她">
+                    <img src="青海山.jpg" alt="山">
+                    <img src="茶卡.jpg" alt="天空">
+                    <img src="西宁1.jpg" alt="她">
+                    <img src="西宁2.jpg" alt="我">
+                </div>
+            </div>
+            <div class="diary-entry">
+                <h3>📅 2025年1月11日 - 西安</h3>
+                <p>在西安看到了一个古城的文化底蕴和美食特色，西安的城墙下是西安人的火车</p>
+                <div class="diary-images">
+                    <img src="520bc2db06553d251c26b7cd3ff6968.jpg" alt="西安站">
+                    <img src="3db3c4884af1a2240cb978fb5d97c61.jpg" alt="西安">
+                    <img src="西安1.jpg" alt="西安">
+                    <img src="西安2 (1).jpg" alt="西安">
+                    <img src="西安2 (2).jpg" alt="西安">
+                    <img src="西安3.jpg" alt="西安">            
+                </div>
+            </div>
+            <div class="diary-entry">
+                <h3>📅 2025年2月8日 - 武汉</h3>
+                <p>我们到了武汉，看了黄鹤楼，长江，还坐了轮船！</p>
+                <div class="diary-images">
+                    <img src="时钟.jpg" alt="时钟">
+                    <img src="cea43964f457649ecfb92c20475d402.jpg" alt="黄鹤楼">
+                    <img src="44bf26b1dd74e6c02f382508f45b480.jpg" alt="我">
+                    <img src="f02e3702e09ec62f7feea5d19dd2656.jpg" alt="她">
+                    <img src="香肠1.jpg" alt="她">
+                    <img src="香肠2.jpg" alt="我">
+                    <img src="武汉1.jpg" alt="我">
+                    <img src="武汉2.jpg" alt="我">
+                </div>
+            </div>
+            <div class="diary-entry">
+                <h3>📅 2025年5月1日 - 兰州</h3>
+                <p>我们到了兰州，去了<strong>中山桥</strong>和<strong>黄河</strong></p>
+                <div class="diary-images">
+                    <img src="兰州.jpg" alt="兰州站">
+                    <img src= "读者.jpg"alt="读者">
+                    <img src="你好兰州.jpg" alt="你好兰州">
+                    <img src="牛肉面.jpg" alt="牛肉面">
+                    <img src="三炮台.jpg" alt="黄河">
+                    <img src="兰州1.jpg" alt="5">
+                    <img src="兰州2.jpg" alt="3">
+                    <img src="兰州3.jpg" alt="2">
+                    <img src="兰州5.jpg" alt="1">
+                    <img src="兰州合照.jpg" alt="合照">
+                </div>
+            </div>
+             <div class="diary-entry">
+                <h3>📅 2025年7月9日 - 郑州</h3>
+                <p>我们到了郑州，去了<strong>海洋馆</strong>和<strong>合记烩面</strong></p>
+                <div class="diary-images">
+                    <img src="海洋馆.jpg" alt="海洋馆">
+                    <video width="180" height="120" controls autoplay>
+                    <source src="海豚.mp4" type="video/mp4">
+                    </video>
+                    <img src="合计会面.jpg" alt="烩面">
+                    <img src="阿平牛杂.jpg" alt="不好吃">
+                <video width="240" height="160" controls autoplay>
+                    <source src="排骨.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+             <div class="diary-entry">
+                <h3>📅 2025年8月23日 - 威海</h3>
+                <p>我们到了威海，去了<strong>海边沙滩</strong>和<strong>海鲜大餐</strong></p>
+                <div class="diary-images">
+                    <img src="威海.jpg" alt="威海">
+                    <video width="180" height="120" controls autoplay>
+                    <source src="威海水.mp4" type="video/mp4">
+                    </video>
+                    <img src="海鲜.jpg" alt="海鲜">
+                    <img src="威海李念.jpg" alt="李念">
+                    <img src="脚丫.jpg" alt="李念">
+                    <img src="威海合照.jpg" alt="我们">
+                    <img src="轮船.jpg" alt="轮船">
+                    <img src="贝壳.jpg" alt="贝壳">
+                    <img src="啤酒.jpg" alt="好喝">
+                    </video>
+            </div>
+             </div>
+             <div class="diary-entry">
+                <h3>📅 2025年8月27日 - 徐州</h3>
+                <p>我们到了徐州，去了<strong>宝莲寺</strong>和<strong>烧烤</strong></p>
+                <div class="diary-images">
+                    <img src="徐州我们.jpg" alt="徐州">
+                    <video width="180" height="120" controls autoplay>
+                    <source src="徐州我们1.mp4" type="video/mp4">
+                    </video>
+                    <img src="徐州烧烤.jpg" alt="烧烤">
+                    <img src="徐州打卡.jpg" >
+                    <img src="徐州打卡2.jpg">
+                    <img src="枣糕.jpg" alt="好吃">
+                    <img src="苏宁广场.jpg" >
+                    <img src="宝莲寺.jpg">
+                    <img src="宝莲寺大.jpg">
+                    <img src="宝莲寺李念.jpg">
+                    </video>
+                </div>
+            </div>
+
+        </section>
+        <section id="travel-summary" class="travel-summary">
+            <h2>🌟 旅行亮点总结</h2>
+            <div class="highlights">
+                <div class="highlight-card">
+                    <h4>最美风景</h4>
+                    <p>青海湖的壮丽景色让我终生难忘</p>
+                </div>
+                <div class="highlight-card">
+                    <h4>最美味食物</h4>
+                    <p>乌鲁木齐的馕和烧烤是此行最佳美食体验</p>
+                </div>
+                <div class="highlight-card">
+                    <h4>最深刻体验</h4>
+                    <p>在洛阳是我的第一次旅行</p>
+                </div>
+                <div class="highlight-card">
+                    <h4>最意外收获</h4>
+                    <p>在武汉体验了长江轮船的独特旅行方式</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="travel-preferences" class="travel-preferences">
+            <h2>📝 分享您的旅行偏好</h2>
+            <form action="#" method="POST">
+                <div>
+                    <label for="destination">最想去的目的地：</label>
+                    <input type="text" id="destination" name="destination" required>
+                </div>
+                <div>
+                    <label for="budget">旅行预算（人民币）：</label>
+                    <input type="number" id="budget" name="budget" min="1000" required>
+                </div>
+                <div>
+                    <label for="travel-type">旅行类型：</label>
+                    <select id="travel-type" name="travel-type">
+                        <option value="休闲度假">休闲度假</option>
+                        <option value="探险旅行">探险旅行</option>
+                        <option value="文化体验">文化体验</option>
+                        <option value="美食之旅">美食之旅</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="submit">提交偏好</button>
+                </div>
+            </form>
+        </section>
+
+        <p style="text-align: center; margin: 30px 0; color: #666;">
+            因为"欲买桂花同载酒，终不似，少年游"，我希望在别人问起我去过什么地方时，我能侃侃而谈吧，仅此而已
+        </p>
+    </div>
+
+    <footer>
+        <div class="sponsors">
+            <img src="linian.jpg" alt="赞助商1" class="sponsor-logo">
+            <img src="linian.jpg" alt="赞助商2" class="sponsor-logo">
+            <img src="linian.jpg" alt="赞助商3" class="sponsor-logo">
+        </div>
+        <p>联系我们: travel@example.com | © 2024 我的奇幻旅程</p>
+        <div class="social-buttons">
+            <a href="#" class="social-button">分享到微信</a>
+            <a href="#" class="social-button">分享到微博</a>
+            <a href="#" class="social-button">分享到朋友圈</a>
+        </div>
+    </footer>
+</body>
+</html>
